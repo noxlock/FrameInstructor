@@ -37,37 +37,40 @@ async def on_message(message): # on message, runs function
 
 	if message.content.startswith('!frame'):
 		message.content = message.content.strip('!frame')
-		r = requests.get(f'https://t7api.herokuapp.com/character/{message.content.strip()}')
-		message.content = message.content.replace("?", " ")
-		message.content = message.content.replace("=", " ") #various stripping, splitting and replacing to format nicely.
 		message.content = message.content.split()
-		result = r.json()
+
+		if len(message.content) < 3: #checks if all 3 parameters are supplied
+			await message.channel.send("Missing parameters")
+
+		else: #if all 3 supplied then:
+			r = requests.get(f'https://t7api.herokuapp.com/character/{message.content[0]}?{message.content[1]}={message.content[2]}')		
+			result = r.json()
+
+			#move on to error checking
+
+			if not result: #if result empty, move doesn't exist
+				await message.channel.send("Move not found")
+
+			#append to embed object, and send.
+
+			else:
+				embed = discord.Embed(
+				title = 'FrameInstructor Data',
+				description = f"Frame Data for {message.content[0]}, {message.content[2]}", #frame data for character, cmd
+				colour = discord.Color.red()
+				)
+				embed.add_field(name="Character", value=message.content[0], inline=True)
+				embed.add_field(name="Command", value=result[0]['cmd'], inline=True)
+				embed.add_field(name="Type", value=result[0]['hit'], inline=True)
+				embed.add_field(name="Damage", value=result[0]['dmg'], inline=True)
+				embed.add_field(name="Startup Frames", value=result[0]['speed'], inline=True)
+				embed.add_field(name="On Block", value=result[0]['onBlock'], inline=True)
+				embed.add_field(name="On Hit", value=result[0]['onHit'], inline=True)
+				embed.add_field(name="CH", value=result[0]['onCounter'], inline=True)
+				#adds all the data to the embed object.
+				await message.channel.send(embed=embed)
 
 
-		if not result: #if result empty, move doesn't exist
-			await message.channel.send("Move not found")
-
-		if 'error' in result: #if error exists, then no valid character
-			await message.channel.send("No character found")
-
-		else:
-			embed = discord.Embed(
-			title = 'FrameInstructor Data',
-			description = f"Frame Data for {message.content[0]}, {message.content[2]}", #frame data for character, cmd
-			colour = discord.Color.red()
-			)
-			embed.add_field(name="Character", value=message.content[0], inline=True)
-			embed.add_field(name="Command", value=result[0]['cmd'], inline=True)
-			embed.add_field(name="Type", value=result[0]['hit'], inline=True)
-			embed.add_field(name="Damage", value=result[0]['dmg'], inline=True)
-			embed.add_field(name="Startup Frames", value=result[0]['speed'], inline=True)
-			embed.add_field(name="On Block", value=result[0]['onBlock'], inline=True)
-			embed.add_field(name="On Hit", value=result[0]['onHit'], inline=True)
-			embed.add_field(name="CH", value=result[0]['onCounter'], inline=True)
-			#adds all the data to the embed object.
-			await message.channel.send(embed=embed)
 
 
-
-
-client.run('NjIyMjQxNzM0NDAzMDMxMDQw.XXxYhA.ZC1GfQbWhzm4XxtCFql4q-nCU0Q')
+client.run('token here')
