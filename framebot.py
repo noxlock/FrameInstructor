@@ -51,9 +51,10 @@ async def on_message(message): # on message, runs function
 			)
 
 			embed.add_field(name="cmd {move}", value="Displays a selected move's info", inline=False)
-			embed.add_field(name="plusOnBlock {True/False}", value="Pastes a link to all of the character's plus frame on block moves. This is done because there is a lot.", inline=False)
-			embed.add_field(name="plusOnHit {True/False}", value="Pastes a link to all of the character's plus frame on hit moves. This is done because there is a lot.", inline=False)
-			
+			embed.add_field(name="{plus/minus}OnBlock {True/False}", value="Pastes a link to all of the character's plus or minus frame on block moves.", inline=False)
+			embed.add_field(name="{plus/minus}OnHit {True/False}", value="Pastes a link to all of the character's plus or minus frame on hit moves.", inline=False)
+			embed.add_field(name="{plus/minus}OnCounter {True/False}", value="Pastes a link to all of the character's plus or minus frame on counter hit moves.", inline=False)
+			embed.add_field(name="OnBlock {min,max}", value="Pastes a link to all of the character's plus or minus frame on counter hit moves.", inline=False)
 			await message.channel.send(embed=embed)
 
 
