@@ -4,9 +4,14 @@ to send back frame data as a Discord embed message
 
 import discord
 import requests
+from environs import Env
 
-
+env = Env()
+env.read_env()
+CLIENT_KEY = env("CLIENT_KEY")
 CLIENT = discord.Client()
+
+
 # could also be fetched via the api, but it's probably easier to just store it globally
 CHAR_LIST = ["Akuma", "Alisa", "Anna", "Armorking", "Asuka", "Bob", "Bryan", "Claudio",
              "Deviljin", "Dragunov", "Eddy", "Eliza", "Feng", "Geese", "Gigas", "Heihachi",
@@ -21,7 +26,7 @@ CHAR_LIST = ["Akuma", "Alisa", "Anna", "Armorking", "Asuka", "Bob", "Bryan", "Cl
 @CLIENT.event
 async def on_ready(): #on successful login
     """On successful login, will print to the console"""
-    print('We have logged in as {0.user}'.format(CLIENT)) #print to the console
+    print(f'We have logged in as {CLIENT.user}') #print to the console
 
 
 
@@ -36,9 +41,13 @@ async def on_message(message): # on receiving a message
     if message.author == CLIENT.user: #prevents the bot calling itself
         return
 
+    elif message.author == "nox#4756":
+        await message.channel.send("/tts let's go")
+
     if message.content.startswith("!"): #if prefix used
 
     # nested within prefix check
+
         if message.content == "!charlist": #character list command
             await embed_work("charlist", CHAR_LIST, message)
 
@@ -48,8 +57,14 @@ async def on_message(message): # on receiving a message
         elif message.content == "!help frame": #frame help menu, very big
             await embed_work("help frame", None, message)
 
+        elif message.content.startswith("!legend"): # for legend of syntax 
+            await embed_work("legend", None, message)
+
         elif message.content.startswith("!frame"): # for frame commands
             await check_query(message)
+
+
+
 
 
 
@@ -97,14 +112,18 @@ async def frame_request(message):
     """
 
     #makes the request
-    r_json = requests.get(f"https://t7api.herokuapp.com/character/{message.content[1]}?{message.content[2]}={message.content[3]}")
-    data = r_json.json() #parses the json
+    #the request cannot be multilined to meet pep-8 otherwise it breaks
+    URL = f"https://t7api.herokuapp.com/character/{message.content[1]}?{message.content[2]}={message.content[3]}"
+    data = requests.get(URL).json() #parses the json
 
     if not data: #if data empty, move doesn't exist
         await message.channel.send("Move not found")
 
+    if message.content[2] != "cmd":
+        await message.channel.send(URL)
+
     else:
-        await embed_work("frame", data, message) #if data exists, pass it to embed_work
+        await embed_work("frame", (data, URL), message) #if data exists, pass it to embed_work
 
 
 async def embed_work(mode, data, message):
@@ -145,6 +164,24 @@ async def embed_work(mode, data, message):
 
         embed.add_field(name="!help frame", value="Displays ALL the options for !frame"
                         , inline=False)
+
+        embed.add_field(name="!legend", value="Displays a link to the official Tekken Zaibatsu Legend page"
+                        , inline=False)
+
+        embed.add_field(name="!frame", value="Does many things pertaining to frame data, check !help frame"
+                        , inline=False)
+
+        await message.channel.send(embed=embed)
+
+
+    elif mode == "legend": #if called by !help
+
+        embed = discord.Embed(
+            title='FrameInstructor',
+            description="!legend"
+        )
+
+        embed.add_field(name="Link to Tekken Zaibatsu's Legend page", value=f"[Tekken Zaibatsu](http://www.tekkenzaibatsu.com/legend.php)", inline=False)
 
         await message.channel.send(embed=embed)
 
@@ -199,6 +236,7 @@ async def embed_work(mode, data, message):
         await message.channel.send(embed=embed)
 
     elif mode == "frame": #if called by !frame/frame_request()
+        data, URL = data[0], data[1]
 
         file = discord.File(f"./Thumbnails/{message.content[1]}.jpg")
         embed = discord.Embed(
@@ -215,10 +253,11 @@ async def embed_work(mode, data, message):
         embed.add_field(name="On Block", value=data[0]['onBlock'], inline=True)
         embed.add_field(name="On Hit", value=data[0]['onHit'], inline=True)
         embed.add_field(name="CH", value=data[0]['onCounter'], inline=True)
+        embed.add_field(name="Not what you were looking for?", value=f"[Try this]({URL})", inline=False)
         embed.set_thumbnail(url=f"attachment://{message.content[1]}.jpg")
 
-        
+
         await message.channel.send(file=file, embed=embed) #send the embed
 
 
-CLIENT.run('NjIyMjQxNzM0NDAzMDMxMDQw.XXxYhA.ZC1GfQbWhzm4XxtCFql4q-nCU0Q') #api key
+CLIENT.run(CLIENT_KEY) #api key
