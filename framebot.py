@@ -56,7 +56,7 @@ async def on_message(message): # on receiving a message
         elif message.content == "!help frame": #frame help menu, very big
             await embed_work("help frame", None, message)
 
-        elif message.content.startswith("!legend"): # for legend of syntax
+        elif message.content == "!legend": # for legend of syntax
             await embed_work("legend", None, message)
 
         elif message.content.startswith("!frame"): # for frame commands
@@ -169,7 +169,10 @@ async def embed_work(mode, data, message):
         embed.add_field(name="!legend", value="Sends a link to the official Tekken Zaibatsu Legend"
                         , inline=False)
 
-        embed.add_field(name="!frame", value="Does many things with frame data, check !help"
+        embed.add_field(name="!charlist", value="Displays a list of all possible characters to be used with other commands"
+                        , inline=False)
+
+        embed.add_field(name="!frame", value="Does many things with frame data, check !help frame"
                         , inline=False)
 
         embed.add_field(name="Confused?", value="[Link to docs](https://www.github.com/noxlock/FrameInstructor)"
