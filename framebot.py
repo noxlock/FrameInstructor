@@ -6,9 +6,11 @@ import discord
 import requests
 from environs import Env
 
-env = Env()
-env.read_env()
-CLIENT_KEY = env("CLIENT_KEY")
+# reading the environment variable from the .env file
+ENV = Env()
+ENV.read_env()
+CLIENT_KEY = ENV("CLIENT_KEY")
+
 CLIENT = discord.Client()
 
 
@@ -41,9 +43,6 @@ async def on_message(message): # on receiving a message
     if message.author == CLIENT.user: #prevents the bot calling itself
         return
 
-    elif message.author == "nox#4756":
-        await message.channel.send("/tts let's go")
-
     if message.content.startswith("!"): #if prefix used
 
     # nested within prefix check
@@ -57,7 +56,7 @@ async def on_message(message): # on receiving a message
         elif message.content == "!help frame": #frame help menu, very big
             await embed_work("help frame", None, message)
 
-        elif message.content.startswith("!legend"): # for legend of syntax 
+        elif message.content.startswith("!legend"): # for legend of syntax
             await embed_work("legend", None, message)
 
         elif message.content.startswith("!frame"): # for frame commands
@@ -81,11 +80,13 @@ async def check_query(message):
     """
 
     message.content = message.content.split()
-    message.content[1] = message.content[1].title()
+
 
     if len(message.content) <= 3: #checks if all 3 parameters are supplied
         await message.channel.send("Missing parameters")
         return
+
+    message.content[1] = message.content[1].title()
 
     if message.content[1] not in CHAR_LIST: # if character not found
         await message.channel.send("""Check the spelling of your character,
@@ -165,10 +166,13 @@ async def embed_work(mode, data, message):
         embed.add_field(name="!help frame", value="Displays ALL the options for !frame"
                         , inline=False)
 
-        embed.add_field(name="!legend", value="Displays a link to the official Tekken Zaibatsu Legend page"
+        embed.add_field(name="!legend", value="Sends a link to the official Tekken Zaibatsu Legend"
                         , inline=False)
 
-        embed.add_field(name="!frame", value="Does many things pertaining to frame data, check !help frame"
+        embed.add_field(name="!frame", value="Does many things with frame data, check !help"
+                        , inline=False)
+
+        embed.add_field(name="Confused?", value="[Link to docs](https://www.github.com/noxlock/FrameInstructor)"
                         , inline=False)
 
         await message.channel.send(embed=embed)
