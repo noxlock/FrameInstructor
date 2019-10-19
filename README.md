@@ -15,7 +15,7 @@ FrameInstructor is a Discord bot written in Python, the bot is focused around ha
   - [Dependencies](https://github.com/noxlock/FrameInstructor#dependencies)
 - [Usage](https://github.com/noxlock/FrameInstructor#Usage)
   - [Commands](https://github.com/noxlock/FrameInstructor#commands)
-  - [More on !frame](https://github.com/noxlock/FrameInstructor#more-on-!frame)
+  - [More on !frame](https://github.com/noxlock/FrameInstructor#more-on-frame)
 - [Acknowledgements](https://github.com/noxlock/FrameInstructor#Acknowledgements)
 - [License](https://github.com/noxlock/FrameInstructor#License)
 
