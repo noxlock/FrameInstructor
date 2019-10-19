@@ -1,1 +1,1 @@
-worker: python framebot.py
+worker: python ./src/framebot.py
