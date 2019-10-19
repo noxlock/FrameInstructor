@@ -8,14 +8,38 @@ FrameInstructor is a Discord bot written in Python, the bot is focused around ha
 
 ## Table Of Contents
 
+- [Algorithm](https://github.com/noxlock/FrameInstructor#algorithm)
 - [Installation](https://github.com/noxlock/FrameInstructor#installation)
-- [Hosting it](https://github.com/noxlock/FrameInstructor#hosting-it)
-  
-- [Inviting it](https://github.com/noxlock/FrameInstructor#inviting-it)
+  - [Hosting it](https://github.com/noxlock/FrameInstructor#hosting-it)
+  - [Inviting it](https://github.com/noxlock/FrameInstructor#inviting-it)
   - [Dependencies](https://github.com/noxlock/FrameInstructor#dependencies)
 - [Usage](https://github.com/noxlock/FrameInstructor#Usage)
+  - [Commands](https://github.com/noxlock/FrameInstructor#commands)
+  - [More on !frame](https://github.com/noxlock/FrameInstructor#more-on-!frame)
 - [Acknowledgements](https://github.com/noxlock/FrameInstructor#Acknowledgements)
 - [License](https://github.com/noxlock/FrameInstructor#License)
+
+
+
+## Algorithm
+
+When the program is run, FrameInstructor attempts to connect to Discord, and should succeed if you have an internet connection and a valid client token, you'll know if your login succeeds depending on what it prints to console. FrameInstructor will then sit in an idle state, until a message is sent in a channel that it exists in. Upon noticing a message, the bot will perform numerous checks to see if the message is valid, if a statement is false, then the bot will simply return to the idle state.
+
+
+
+The first check the bot performs on the message is to see if the author of the message is itself, this prevents it from performing any recursive behaviour. If the message is not sent by itself, then it moves onto the second check, which looks to see if the message starts with the prefix (!), if it does, then it moves onto the third check, which checks if the message matches any of the commands, if this check passes, it determines whether the command it's performing is !frame, or a different command. If the bot determines that it is performing a command different from !frame, it will send it to the respective class methods, and send it to the channel.
+
+
+
+If the command supplied is !frame, the bot performs a more detailed process which includes error checking. The error checking begins with the `check_query()` function, which splits the user's message into multiple parts, it then checks how many parts the message has, and that it at least consists of four parts. The bot then formats the message and checks if the character supplied is valid, if this test succeeds then `frame_request()` is called. 
+
+
+
+`frame_request()` makes the GET request to the API, and makes sure that the result is correct, it then looks back at what parameters were called with !frame, if it was `cmd`, then it sends it to a class method to be embedded and sent to the channel, if it wasn't `cmd`, then it simply sends the URL of the request to the channel.
+
+![](./docs/FIFlow.io.png)
+
+ [legend](https://www.smartdraw.com/flowchart/flowchart-symbols.htm)
 
 ## Installation
 

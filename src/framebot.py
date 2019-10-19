@@ -47,20 +47,22 @@ async def on_message(message): # on receiving a message
 
     # nested within prefix check
 
-        if message.content == "!charlist": #character list command
-            await embed_work("charlist", CHAR_LIST, message)
+        reply = Embedder(message)
 
-        elif message.content == "!help": #displays the help menu
-            await embed_work("help", None, message)
+        if message.content == "!help": #displays the help menu
+            await reply.help()
 
         elif message.content == "!help frame": #frame help menu, very big
-            await embed_work("help frame", None, message)
+            await reply.help_frame()
+
+        elif message.content == "!charlist": #character list command
+            await reply.charlist(CHAR_LIST)
 
         elif message.content == "!legend": # for legend of syntax
-            await embed_work("legend", None, message)
+            await reply.legend()
 
         elif message.content.startswith("!frame"): # for frame commands
-            await check_query(message)
+            await check_query(reply)
 
 
 
@@ -68,93 +70,100 @@ async def on_message(message): # on receiving a message
 
 
 
-async def check_query(message):
+async def check_query(reply):
     """Does some of the error checking before fully making
     a request with frame_request()
 
-    Args:
-    message: object that has .content, and .channel, which we need
-
-    Type:
+    Parameters
+    ----------
     message: class
+        class that has .content, and .channel, which we need
+
+    Returns
+    -------
+
     """
 
-    message.content = message.content.split()
+    reply.message.content = reply.message.content.split()
 
 
-    if len(message.content) <= 3: #checks if all 3 parameters are supplied
-        await message.channel.send("Missing parameters")
+    if len(reply.message.content) <= 3: #checks if all 3 parameters are supplied
+        await reply.message.channel.send("Missing parameters")
         return
 
-    message.content[1] = message.content[1].title()
+    reply.message.content[1] = reply.message.content[1].title()
 
-    if message.content[1] not in CHAR_LIST: # if character not found
-        await message.channel.send("""Check the spelling of your character,
+    if reply.message.content[1] not in CHAR_LIST: # if character not found
+        await reply.message.channel.send("""Check the spelling of your character,
 do !charlist to see all available characters.""")
         return
 
 
-    await frame_request(message) # if no errors found, make the request
+    await frame_request(reply) # if no errors found, make the request
 
 
 
 
-async def frame_request(message):
+async def frame_request(reply):
     """Makes the request, and checks if the result is valid before
     sending it to embed_work()
 
-    Args:
-    message: same message class we're using
-    with the other functions, we still need it
-    to make the request and pass the channel to embed
-
-    Type:
+    Parameters
+    ----------
     message: class
+        same message class we're using
+        with the other functions, we still need it
+        to make the request and pass the channel to embed
+
+    Returns
+    -------
     """
 
     #makes the request
     #the request cannot be multilined to meet pep-8 otherwise it breaks
-    URL = f"https://t7api.herokuapp.com/character/{message.content[1]}?{message.content[2]}={message.content[3]}"
+    URL = f"https://t7api.herokuapp.com/character/{reply.message.content[1]}?{reply.message.content[2]}={reply.message.content[3]}"
     data = requests.get(URL).json() #parses the json
 
     if not data: #if data empty, move doesn't exist
-        await message.channel.send("Move not found")
+        await reply.message.channel.send("Move not found")
 
-    if message.content[2] != "cmd":
-        await message.channel.send(URL)
+    if reply.message.content[2] != "cmd":
+        await reply.message.channel.send(URL)
 
     else:
-        await embed_work("frame", (data, URL), message) #if data exists, pass it to embed_work
+        await reply.frame((data, URL)) #if data exists, pass it to embed_work
 
 
-async def embed_work(mode, data, message):
-    """This function does all the work pertaining to embeds, and then sends them.
-    Args:
-    mode: each command will pass a different mode to the function, letting us know what to do
-    data: any data required to send the embed
-    message: used to send to the same channel as the command was used, and to read content.
-
-    Type:
-    mode: string
-    data: dict/list
-    message: class
+class Embedder:
+    """Class that handles all the code 
+    regarding embeds
     """
 
-### CHECKING WHAT TO EMBED DEPENDING ON MODE ###
+    def __init__(self, message):
+        """Initializes the class with the 
+        message class
 
-    if mode == "charlist": #if called by charlist
+        Parameters
+        ----------
+        data: list/tuple
+            anything extra needed to complete
+            the embed
+        message: class
+            contains the message content and channel
+        """
 
-        ### EMBED ALL DATA ###
-        embed = discord.Embed(
-            title='FrameInstructor Character List',
-            description=f"List of characters"
-        )
-        embed.add_field(name="Character List", value=CHAR_LIST, inline=False)
-        ### SEND TO CHANNEL ###
-        await message.channel.send(embed=embed)
+        self.message = message
 
 
-    elif mode == "help": #if called by !help
+    async def help(self):
+        """Embeds and sends the result
+        of the !help command
+
+        Parameters
+        ----------
+        self: class
+            contains the message content and channel
+        """
 
         embed = discord.Embed(
             title='FrameInstructor Help Menu',
@@ -178,25 +187,22 @@ async def embed_work(mode, data, message):
         embed.add_field(name="Confused?", value="[Link to docs](https://www.github.com/noxlock/FrameInstructor)"
                         , inline=False)
 
-        await message.channel.send(embed=embed)
+        await self.message.channel.send(embed=embed)
 
 
-    elif mode == "legend": #if called by !help
+    async def help_frame(self):
+        """Embeds and sends the result
+        of the !help frame command
 
-        embed = discord.Embed(
-            title='FrameInstructor',
-            description="!legend"
-        )
+        Parameters
+        ----------
+        self: class
+            contains the message content and channel
+        """
 
-        embed.add_field(name="Link to Tekken Zaibatsu's Legend page", value=f"[Tekken Zaibatsu](http://www.tekkenzaibatsu.com/legend.php)", inline=False)
-
-        await message.channel.send(embed=embed)
-
-
-    elif mode == "help frame": #if called by !help frame
         embed = discord.Embed(
             title='Help Menu For !frame',
-            description=f"List of all syntax you can use with !frame"
+            description="Menu follows the convention of !frame {character} {parameter} {condition}"
         )
 
         embed.add_field(name="cmd {move}", value="Displays a selected move's info",
@@ -240,19 +246,75 @@ async def embed_work(mode, data, message):
         embed.add_field(name="crush {TJ/TC}", value="""Pastes a link to all of the character's
                         moves which are either tech jump or tech crouch.""", inline=False)
 
-        await message.channel.send(embed=embed)
+        embed.add_field(name="Confused?", value="[Link to docs](https://www.github.com/noxlock/FrameInstructor)"
+                        , inline=False)
 
-    elif mode == "frame": #if called by !frame/frame_request()
+        await self.message.channel.send(embed=embed)
+
+
+    async def charlist(self, data):
+        """Embeds and sends the charlist
+
+        Parameters
+        ----------
+        data: list
+            the list of characters
+        self: class
+            contains the message content and channel
+        """
+
+        ### EMBED ALL DATA ###
+        embed = discord.Embed(
+            title='FrameInstructor Character List',
+            description=f"List of characters"
+        )
+        embed.add_field(name="Character List", value=CHAR_LIST, inline=False)
+        ### SEND TO CHANNEL ###
+        await self.message.channel.send(embed=embed)
+
+
+    async def legend(self):
+        """Embeds and sends a 
+        hyperlink to the legend
+
+        Parameters
+        ----------
+        self: class
+            contains the message content and channel
+        """
+
+        embed = discord.Embed(
+            title='FrameInstructor',
+            description="!legend"
+        )
+
+        embed.add_field(name="Link to Tekken Zaibatsu's Legend page", value=f"[Tekken Zaibatsu](http://www.tekkenzaibatsu.com/legend.php)", inline=False)
+
+        await self.message.channel.send(embed=embed)
+
+
+    async def frame(self, data):
+        """Embeds the result of frame_request()
+        and sends it.
+
+        Parameters
+        ----------
+        data: tuple
+            the request result and URL of the endpoint
+        self: class
+            contains the message content and channel
+        """
+
         data, URL = data[0], data[1]
 
-        file = discord.File(f"./Thumbnails/{message.content[1]}.jpg")
+        file = discord.File(f"./Thumbnails/{self.message.content[1]}.jpg")
         embed = discord.Embed(
-            title='FrameInstructor Data',
-            description=f"Frame Data for {message.content[1]}, {message.content[3]}",
+            title='FrameInstructor Data Result',
+            description=f"Frame Data for {self.message.content[1]}, {self.message.content[3]}",
             colour=discord.Color.red()
         )
 
-        embed.add_field(name="Character", value=message.content[1], inline=True)
+        embed.add_field(name="Character", value=self.message.content[1], inline=True)
         embed.add_field(name="Command", value=data[0]['cmd'], inline=True)
         embed.add_field(name="Type", value=data[0]['hit'], inline=True)
         embed.add_field(name="Damage", value=data[0]['dmg'], inline=True)
@@ -261,10 +323,11 @@ async def embed_work(mode, data, message):
         embed.add_field(name="On Hit", value=data[0]['onHit'], inline=True)
         embed.add_field(name="CH", value=data[0]['onCounter'], inline=True)
         embed.add_field(name="Not what you were looking for?", value=f"[Try this]({URL})", inline=False)
-        embed.set_thumbnail(url=f"attachment://{message.content[1]}.jpg")
+        embed.set_thumbnail(url=f"attachment://{self.message.content[1]}.jpg")
 
 
-        await message.channel.send(file=file, embed=embed) #send the embed
+        await self.message.channel.send(file=file, embed=embed) #send the embed
 
 
 CLIENT.run(CLIENT_KEY) #api key
+
